@@ -58,27 +58,46 @@ class AbstractCar:
     def draw(self, win):
         blit_rotate_center(win, self.img, (self.x, self.y), self.angle)
 
+    # Logic for moving forward
     def move_forward(self):
+        # Will use whatever is less in value either the (velocity + acceleration) or the max velocity
         self.vel = min(self.vel + self.acceleration, self.max_vel)
+        # Once forward logic is computed run move() to actually move
         self.move() 
-        
-    def move_backward(self):
-        self.vel = max(self.vel - self.acceleration, -self.max_vel/2)
-        self.move() 
-        
-    def move(self):
-       radians = math.radians(self.angle)
-       vertical = math.cos(radians) * self.vel
-       horizontal = math.sin(radians) * self.vel 
 
-       self.y -= vertical
-       self.x -= horizontal
-    def collide(self, mask, x=0, y=0):
-        car_mask = pygame.mask.from_surface(self.img)
-        offset = (int(self.x - x), int(self.y - y))
-        poi = mask.overlap(car_mask, offset)
-        return poi
+    # Logic for moving backward 
+    def move_backward(self):
+        # Will use either (self.vel - self.acceleration) or the max velocity divided by two
+        # This is because you can't move backwards at the same speed as you can move forward
+        self.vel = max(self.vel - self.acceleration, -self.max_vel/2)
+        # Finally run the move() method to actually move the car based off of this logic
+        self.move() 
     
+    # Moving logic
+    def move(self):
+       # Convert the angle to radians 
+       radians = math.radians(self.angle)
+       # Get the vertical component of velocity vector 
+       vertical = math.cos(radians) * self.vel
+       # Get the horizontal component of the velocity vector
+       horizontal = math.sin(radians) * self.vel
+       #Subtract Y position by the vertical component
+       self.y -= vertical
+       #Subtract the x position by the horizontal component
+       self.x -= horizontal
+
+# NEEDS MORE ATTENTION AS FAR AS THE DOCUMENTATION
+    # Logic for colliding into the track border  
+    def collide(self, mask, x=0, y=0):
+        # Create a mask for the track border and accept an image
+        car_mask = pygame.mask.from_surface(self.img)
+        # Create an offset? I don't really undestand how this works to be honest
+        offset = (int(self.x - x), int(self.y - y))
+        # Point of intersection = compare the track border and see if it intersects with car 
+        poi = mask.overlap(car_mask, offset)
+        # Return the point of intersection
+        return poi
+    # If this method is run it will reset the car to the starting position 
     def reset(self):
         self.x, self.y = self.START_POS
         self.angle = 0
